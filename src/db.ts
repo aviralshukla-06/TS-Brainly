@@ -1,4 +1,7 @@
-import { model, Schema } from "mongoose";
+const connestionStr = process.env.mongoUrl
+import mongoose, { model, Schema } from "mongoose";
+
+mongoose.connect(connestionStr);
 
 const userSchema = new Schema({
     userName: {
