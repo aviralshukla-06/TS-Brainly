@@ -1,5 +1,5 @@
-import express from "express";
-import { Request, Response } from "express";
+
+import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -10,7 +10,8 @@ app.use(express.json())
 
 const secret = process.env.JWT_SECRET;
 
-app.post("/api/v1/signup", async (req: Request, res: Response) => {
+app.post("/api/v1/signup", async (req: Request, res: Response): Promise<void> => {
+
 
     const reqBody = z.object({
         userName: z.string(),
@@ -23,9 +24,10 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
     // const errMsg = parsedBody.error;
 
     if (!parsedBody.success) {
-        return res.status(403).json({
+        res.status(403).json({
             message: parsedBody.error.issues
         });
+        return
     }
 
     const { userName, firstName, lastName, password } = parsedBody.data;
@@ -40,19 +42,86 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
         })
     } catch (e) {
         console.log(e);
-        return res.status(500).json({
+        res.status(500).json({
             message: "An error occurred while creating the user"
         })
+        return
     }
 
     res.json({
         message: "User created successfully"
     })
 
+})
 
 
+
+app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> => {
+
+    const { userName, password } = req.body
+
+    const signingUser = await userModel.findOne({
+        userName: userName
+    })
+
+
+
+    // this way we can extract out password on console 
+    // const signingUser = await userModel.findOne({
+    //     userName: userName
+    // }).select('password')
+
+    // console.log(signingUser?.password);
+
+    if (!signingUser) {
+        res.status(403).json({
+            message: "User does Not exist."
+        });
+        return
+    }
+
+    if (!signingUser?.password) {
+        res.status(500).json({
+            message: "Password not found for this user in DB"
+        });
+        return
+    }
+
+
+    const matchPassword = await bcrypt.compare(password, signingUser?.password)
+
+    // const parsedBody = reqBody.safeParse(req.body);
+    // const errMsg = parsedBody.error;
+
+    // if (!parsedBody.success) {
+    //     res.status(403).json({
+    //         message: parsedBody.error.issues
+    //     });
+    //     return
+    // }
+    // const hashedPass = await bcrypt.hash(password, 5);
+
+    // try {
+    //     const createNewUser = await userModel.create({
+    //         userName: userName,
+    //         firstName: firstName,
+    //         lastName: lastName,
+    //         password: hashedPass
+    //     })
+    // } catch (e) {
+    //     console.log(e);
+    //     res.status(500).json({
+    //         message: "An error occurred while creating the user"
+    //     })
+    //     return
+    // }
+
+    // res.json({
+    //     message: "User created successfully"
+    // })
 
 })
+
 // app.post("/api/v1/signin", (req, res) => {
 
 // })
@@ -72,4 +141,5 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
 
 // })
 
+app.listen(3000)
 

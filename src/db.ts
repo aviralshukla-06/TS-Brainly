@@ -1,6 +1,13 @@
-const connestionStr = process.env.mongoUrl
+import dotenv from "dotenv";
+dotenv.config();
 import mongoose, { model, Schema } from "mongoose";
 
+const connestionStr = process.env.mongoUrl;
+console.log(connestionStr);
+
+if (!connestionStr) {
+    throw new Error("mongoUrl is not defined in environment variables");
+}
 mongoose.connect(connestionStr);
 
 const userSchema = new Schema({
