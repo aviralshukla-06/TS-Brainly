@@ -1,4 +1,5 @@
-
+import dotenv from "dotenv";
+dotenv.config();
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
@@ -28,6 +29,16 @@ app.post("/api/v1/signup", async (req: Request, res: Response): Promise<void> =>
             message: parsedBody.error.issues
         });
         return
+    }
+
+    const existingUser = await userModel.findOne({
+        userName: req.body.userName
+    })
+
+    if (existingUser) {
+        res.status(411).json({
+            message: "User already exists"
+        })
     }
 
     const { userName, firstName, lastName, password } = parsedBody.data;
@@ -90,41 +101,34 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
     const matchPassword = await bcrypt.compare(password, signingUser?.password)
 
-    // const parsedBody = reqBody.safeParse(req.body);
-    // const errMsg = parsedBody.error;
+    if (!matchPassword) {
+        res.status(403).json({ message: "Incorrect password" });
+        return;
+    }
 
-    // if (!parsedBody.success) {
-    //     res.status(403).json({
-    //         message: parsedBody.error.issues
-    //     });
-    //     return
-    // }
-    // const hashedPass = await bcrypt.hash(password, 5);
+    if (!secret) {
+        throw new Error("JWT_SECRET is not defined in environment variables");
+    }
 
-    // try {
-    //     const createNewUser = await userModel.create({
-    //         userName: userName,
-    //         firstName: firstName,
-    //         lastName: lastName,
-    //         password: hashedPass
-    //     })
-    // } catch (e) {
-    //     console.log(e);
-    //     res.status(500).json({
-    //         message: "An error occurred while creating the user"
-    //     })
-    //     return
-    // }
+    let token: string | undefined;
 
-    // res.json({
-    //     message: "User created successfully"
-    // })
+    if (matchPassword) {
+        token = jwt.sign({
+            id: signingUser._id
+        }, secret)
+    } else {
+        res.status(403).json({
+            message: "Incorrect details"
+        });
+        return
+    }
+    res.status(200).json({
+        message: "Sign-in successful",
+        token
+    });
 
 })
 
-// app.post("/api/v1/signin", (req, res) => {
-
-// })
 // app.post("/api/v1/content", (req, res) => {
 
 // })
