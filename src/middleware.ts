@@ -5,7 +5,7 @@ dotenv.config();
 
 const secret = process.env.JWT_SECRET;
 
-export const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const userMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -25,9 +25,10 @@ export const userMiddleware = (req: Request, res: Response, next: NextFunction) 
             next()
         }
     } catch (err) {
-        return res.status(403).json({
+        res.status(403).json({
             message: "Invalid or Expired Token"
         });
+        return
     }
 
 

@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import z from "zod"
+import { userMiddleware } from "./middleware"
 import { userModel } from "./db";
 const app = express();
 app.use(express.json())
@@ -129,9 +130,10 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
 })
 
-// app.post("/api/v1/content", (req, res) => {
 
-// })
+app.post("/api/v1/content", userMiddleware, (req: Request, res: Response) => {
+
+})
 // app.get("/api/v1/content", (req, res) => {
 
 // })
