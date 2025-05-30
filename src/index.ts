@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import z from "zod"
 import { userMiddleware } from "./middleware"
-import { userModel } from "./db";
+import { contentModel, userModel } from "./db";
 const app = express();
 app.use(express.json())
 
@@ -131,7 +131,23 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 })
 
 
-app.post("/api/v1/content", userMiddleware, (req: Request, res: Response) => {
+app.post("/api/v1/content", userMiddleware, (req: Request, res: Response): void => {
+
+    const link = req.body.link;
+    const type = req.body.type;
+
+    contentModel.create({
+        link,
+        type,
+        //@ts-ignore
+        userId: req.userId,
+        tags: []
+    })
+
+    res.json({
+        message: "Content added"
+    })
+    return;
 
 })
 // app.get("/api/v1/content", (req, res) => {
