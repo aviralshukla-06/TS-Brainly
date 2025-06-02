@@ -136,13 +136,15 @@ app.post("/api/v1/content", userMiddleware, (req: Request, res: Response): void 
     const link = req.body.link;
     const type = req.body.type;
 
-    contentModel.create({
-        link,
-        type,
-        //@ts-ignore
-        userId: req.userId,
-        tags: []
-    })
+    const details =
+
+        contentModel.create({
+            link,
+            type,
+            //@ts-ignore
+            userId: req.userId,
+            tags: []
+        })
 
     res.json({
         message: "Content added"
