@@ -152,9 +152,9 @@ app.post("/api/v1/content", userMiddleware, (req: Request, res: Response): void 
     return;
 
 })
-// app.get("/api/v1/content", (req, res) => {
+app.get("/api/v1/content", (req, res) => {
 
-// })
+})
 // app.delete("/api/v1/content", (req, res) => {
 
 // })
