@@ -1,25 +1,24 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express, { Request, Response } from "express";
-import mongoose from "mongoose";
+import { Client } from "pg";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import z from "zod"
 import { userMiddleware } from "./middleware"
-import { contentModel, userModel } from "./db";
+import { pgClient } from "./db";
 const app = express();
 app.use(express.json())
-
 const secret = process.env.JWT_SECRET;
+
 
 app.post("/api/v1/signup", async (req: Request, res: Response): Promise<void> => {
 
 
     const reqBody = z.object({
         userName: z.string(),
-        firstName: z.string(),
-        lastName: z.string(),
-        password: z.string().min(8)
+        email: z.string(),
+        password: z.string()
     });
 
     const parsedBody = reqBody.safeParse(req.body);
@@ -32,26 +31,28 @@ app.post("/api/v1/signup", async (req: Request, res: Response): Promise<void> =>
         return
     }
 
-    const existingUser = await userModel.findOne({
-        userName: req.body.userName
-    })
+    const existingUserCheck = `SELECT username FROM users WHERE email= $1;`
+    const insertCheckValue = await pgClient.query(existingUserCheck, [req.body.email])
 
-    if (existingUser) {
+    if (insertCheckValue.rows.length > 0) {
         res.status(411).json({
             message: "User already exists"
-        })
+        });
+        return;
     }
 
-    const { userName, firstName, lastName, password } = parsedBody.data;
+    const { userName, email, password } = parsedBody.data;
     const hashedPass = await bcrypt.hash(password, 5);
 
     try {
-        const createNewUser = await userModel.create({
-            userName: userName,
-            firstName: firstName,
-            lastName: lastName,
-            password: hashedPass
-        })
+        const newUserCreation = `INSERT INTO users (username, email, password) VALUES ($1, $2, $3);`
+        const newUserValues = await pgClient.query(newUserCreation, [userName, email, hashedPass])
+        // const createNewUser = await userModel.create({
+        //     userName: userName,
+        //     firstName: firstName,
+        //     lastName: lastName,
+        //     password: hashedPass
+        // })
     } catch (e) {
         console.log(e);
         res.status(500).json({
@@ -72,9 +73,8 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
     const { userName, password } = req.body
 
-    const signingUser = await userModel.findOne({
-        userName: userName
-    })
+    const signingUser = `SELECT username FROM users WHERE userName= $1;`
+    const insertValue = await pgClient.query(signingUser, [req.body.userName])
 
 
 
