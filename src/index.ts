@@ -130,20 +130,17 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 })
 
 
-app.post("/api/v1/content", userMiddleware, (req: Request, res: Response): void => {
+app.post("/api/v1/content", userMiddleware, async (req: Request, res: Response): Promise<void> => {
 
+    const userId = req.userId;
     const link = req.body.link;
-    const type = req.body.type;
+    const title = req.body.title;
+    const description = req.body.description;
 
-    const details =
+    const insertContents = `INSERT INTO contents (link, title, description) VALUES ($1, $2, $3);`;
+    const insertContentsValues = await pgClient.query(insertContents, [link, title, description]);
 
-        contentModel.create({
-            link,
-            type,
-            //@ts-ignore
-            userId: req.userId,
-            tags: []
-        })
+
 
     res.json({
         message: "Content added"

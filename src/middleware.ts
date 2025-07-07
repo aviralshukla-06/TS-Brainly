@@ -5,6 +5,10 @@ dotenv.config();
 
 const secret = process.env.JWT_SECRET;
 
+interface AuthRequest extends Request {
+    userId?: string;
+}
+
 export const userMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader = req.headers.authorization;
 
@@ -17,8 +21,9 @@ export const userMiddleware = (req: Request, res: Response, next: NextFunction):
     if (!authHeader || !secret) {
         throw new Error("Either secret or token is not defined");
     }
+
     try {
-        const decodedToken = jwt.verify(authHeader, secret)
+        const decodedToken = jwt.verify(authHeader, secret) as { id: String };
         if (decodedToken) {
             //@ts-ignore
             req.userId = decodedToken.id
