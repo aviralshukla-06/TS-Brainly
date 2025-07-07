@@ -73,7 +73,7 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
     const { userName, password } = req.body
 
-    const signingUser = `SELECT password FROM users WHERE userName= $1;`
+    const signingUser = `SELECT id, password FROM users WHERE userName= $1;`
     const insertValue = await pgClient.query(signingUser, [req.body.userName])
 
 
@@ -92,7 +92,10 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
         return
     }
 
-    const userPass = insertValue.rows[0];
+    const userRow = insertValue.rows[0];
+
+    const userPass = userRow.password;
+    const userId = userRow.id;
     console.log(userPass);
 
 
@@ -103,26 +106,26 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
         return;
     }
 
-    // if (!secret) {
-    //     throw new Error("JWT_SECRET is not defined in environment variables");
-    // }
+    if (!secret) {
+        throw new Error("JWT_SECRET is not defined in environment variables");
+    }
 
-    // let token: string | undefined;
+    let token: string | undefined;
 
-    // if (matchPassword) {
-    //     token = jwt.sign({
-    //         id: signingUser._id
-    //     }, secret)
-    // } else {
-    //     res.status(403).json({
-    //         message: "Incorrect details"
-    //     });
-    //     return
-    // }
-    // res.status(200).json({
-    //     message: "Sign-in successful",
-    //     token
-    // });
+    if (matchPassword) {
+        token = jwt.sign({
+            id: userId
+        }, secret)
+    } else {
+        res.status(403).json({
+            message: "Incorrect details"
+        });
+        return
+    }
+    res.status(200).json({
+        message: "Sign-in successful",
+        token
+    });
 
 })
 
