@@ -73,7 +73,7 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
     const { userName, password } = req.body
 
-    const signingUser = `SELECT username FROM users WHERE userName= $1;`
+    const signingUser = `SELECT password FROM users WHERE userName= $1;`
     const insertValue = await pgClient.query(signingUser, [req.body.userName])
 
 
@@ -85,48 +85,44 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
     // console.log(signingUser?.password);
 
-    if (!signingUser) {
+    if (insertValue.rows.length === 0) {
         res.status(403).json({
             message: "User does Not exist."
         });
         return
     }
 
-    if (!signingUser?.password) {
-        res.status(500).json({
-            message: "Password not found for this user in DB"
-        });
-        return
-    }
+    const userPass = insertValue.rows[0];
+    console.log(userPass);
 
 
-    const matchPassword = await bcrypt.compare(password, signingUser?.password)
+    const matchPassword = await bcrypt.compare(password, userPass)
 
     if (!matchPassword) {
         res.status(403).json({ message: "Incorrect password" });
         return;
     }
 
-    if (!secret) {
-        throw new Error("JWT_SECRET is not defined in environment variables");
-    }
+    // if (!secret) {
+    //     throw new Error("JWT_SECRET is not defined in environment variables");
+    // }
 
-    let token: string | undefined;
+    // let token: string | undefined;
 
-    if (matchPassword) {
-        token = jwt.sign({
-            id: signingUser._id
-        }, secret)
-    } else {
-        res.status(403).json({
-            message: "Incorrect details"
-        });
-        return
-    }
-    res.status(200).json({
-        message: "Sign-in successful",
-        token
-    });
+    // if (matchPassword) {
+    //     token = jwt.sign({
+    //         id: signingUser._id
+    //     }, secret)
+    // } else {
+    //     res.status(403).json({
+    //         message: "Incorrect details"
+    //     });
+    //     return
+    // }
+    // res.status(200).json({
+    //     message: "Sign-in successful",
+    //     token
+    // });
 
 })
 
