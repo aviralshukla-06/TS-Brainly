@@ -149,12 +149,37 @@ app.post("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respon
     return;
 
 })
-// app.get("/api/v1/content", (req, res) => {
+app.get("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.userId;
 
-// })
-// app.delete("/api/v1/content", (req, res) => {
+    const userDataQuery = `SELECT * FROM contents WHERE user_id = $1 ;`;
+    const responseData = await pgClient.query(userDataQuery, [userId]);
 
-// })
+    const response = responseData.rows[0];
+
+    if (responseData.rows.length === 0) {
+        res.status(403).json({
+            message: "No contents found"
+        });
+        return
+    } else {
+        res.status(200).json({
+            response
+        })
+    }
+    console.log(response);
+})
+app.delete("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.userId;
+
+    const deleteQuery = `DELETE FROM contents WHERE user_id = $1 ;`;
+    await pgClient.query(deleteQuery, [userId]);
+
+    res.json({
+        message: "Content deleted successfully for id:" + userId
+    })
+    return;
+})
 // app.post("/api/v1/brain/share", (req, res) => {
 
 // })
