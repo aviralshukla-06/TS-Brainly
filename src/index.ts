@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 import express, { Request, Response } from "express";
 import { AuthRequest } from "./types";
-import { Client } from "pg";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import z from "zod"
@@ -97,7 +96,7 @@ app.post("/api/v1/signin", async (req: Request, res: Response): Promise<void> =>
 
     const userPass = userRow.password;
     const userId = userRow.id;
-    console.log(userPass);
+    // console.log(userPass);
 
 
     const matchPassword = await bcrypt.compare(password, userPass)
@@ -139,7 +138,7 @@ app.post("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respon
     const description = req.body.description;
 
     const insertContents = `INSERT INTO contents (links, title, description, user_id) VALUES ($1, $2, $3, $4);`;
-    const insertContentsValues = await pgClient.query(insertContents, [links, title, description, userId]);
+    await pgClient.query(insertContents, [links, title, description, userId]);
 
 
 
@@ -169,6 +168,25 @@ app.get("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respons
     }
     console.log(response);
 })
+
+app.put("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
+
+    const userId = req.userId;
+
+    const links = req.body.links;
+    const title = req.body.title;
+    const description = req.body.description;
+
+    const updateQuery = `UPDATE contents SET links = $1, title = $2, description = $3 WHERE user_id = $4;`
+    await pgClient.query(updateQuery, [links, title, description, userId]);
+
+    res.json({
+        message: "Content updated successfully for id:" + userId
+    })
+    return;
+
+})
+
 app.delete("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
     const userId = req.userId;
 
