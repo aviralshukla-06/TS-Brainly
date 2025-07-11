@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-type Variants = "primary" | "secondary";
+// type Variants = "primary" | "secondary";
 
 interface buttonProps {
     variant: "primary" | "secondary";
@@ -17,15 +17,16 @@ const variantStyles = {
 }
 
 const sizeStyles = {
-    "sm": "px-2 py-1",
-    "md": "px-4 py-1",
+    "sm": "px-2 py-1 text-sm",
+    "md": "px-4 py-1 text-md",
     "lg": "px-6 py-2",
 }
 
-const defaultStyles = "rounded-md"
+const defaultStyles = "rounded-md flex items-center"
 
 export const Button = (props: buttonProps) => {
-    return <button className={`${variantStyles[props.variant]} ${sizeStyles[props.size]} ${defaultStyles} `}>{props.text}</button>
+    return <button className={`${variantStyles[props.variant]} ${sizeStyles[props.size]} ${defaultStyles}`}>
+        {props.startIcon ? <div className="p-1">{props.startIcon}</div> : null}  {props.text}</button>
 }
 
 {/* <Button variant="primary" size="lg" text="Add"  onClick={() => { }} /> */ }
