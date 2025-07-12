@@ -1,5 +1,5 @@
 export const SideBar = () => {
-    return <div className="w-full h-screen border border-black">
+    return <div className="w-full h-screen">
 
         hi tere
     </div>

@@ -6,7 +6,7 @@ export const ShareIcon = ({ size }: SizeStyles) => {
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        className={sizeClasses[size]}
+        className={`${sizeClasses[size]} mr-4 flex items-center`}
     >
         <path
             stroke-linecap="round"
