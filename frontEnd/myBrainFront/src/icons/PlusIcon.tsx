@@ -9,7 +9,7 @@ export const PlusIcon = ({ size }: SizeStyles) => {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className={`${sizeClasses[size]} mr-2`}
+            className={sizeClasses[size]}
         >
             <path
                 strokeLinecap="round"
