@@ -177,13 +177,14 @@ app.get("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respons
 app.put("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
 
     const userId = req.userId;
+    const contentId = req.body.contentId;
 
     const links = req.body.links;
     const title = req.body.title;
     const description = req.body.description;
 
-    const updateQuery = `UPDATE contents SET links = $1, title = $2, description = $3 WHERE user_id = $4;`
-    await pgClient.query(updateQuery, [links, title, description, userId]);
+    const updateQuery = `UPDATE contents SET links = $1, title = $2, description = $3 WHERE user_id = $4 AND contentid = $5;`
+    await pgClient.query(updateQuery, [links, title, description, userId, contentId]);
 
     res.json({
         message: "Content updated successfully for id:" + userId
