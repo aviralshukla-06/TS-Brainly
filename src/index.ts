@@ -7,8 +7,10 @@ import bcrypt from "bcrypt";
 import z from "zod"
 import { userMiddleware } from "./middleware"
 import { pgClient } from "./db";
+import cors from "cors"
 const app = express();
 app.use(express.json())
+app.use(cors())
 const secret = process.env.JWT_SECRET;
 
 
@@ -137,13 +139,16 @@ app.post("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respon
     const title = req.body.title;
     const description = req.body.description;
 
-    const insertContents = `INSERT INTO contents (links, title, description, user_id) VALUES ($1, $2, $3, $4);`;
-    await pgClient.query(insertContents, [links, title, description, userId]);
+    const insertContents = `INSERT INTO contents (links, title, description, user_id) VALUES ($1, $2, $3, $4) RETURNING contentid; `;
+    const result = await pgClient.query(insertContents, [links, title, description, userId]);
 
+    const contentId = result.rows[0].contentid
 
+    console.log(contentId);
 
     res.json({
-        message: "Content added for id:" + userId
+        message: "Content added for id:" + userId,
+        id: contentId
     })
     return;
 
@@ -154,7 +159,7 @@ app.get("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respons
     const userDataQuery = `SELECT * FROM contents WHERE user_id = $1 ;`;
     const responseData = await pgClient.query(userDataQuery, [userId]);
 
-    const response = responseData.rows[0];
+    const response = responseData.rows;
 
     if (responseData.rows.length === 0) {
         res.status(403).json({
@@ -188,16 +193,22 @@ app.put("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Respons
 })
 
 app.delete("/api/v1/content", userMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
-    const userId = req.userId;
+    // const userId = req.userId;
+    const { contentId } = req.body;
 
-    const deleteQuery = `DELETE FROM contents WHERE user_id = $1 ;`;
-    await pgClient.query(deleteQuery, [userId]);
+    if (!contentId) {
+        res.status(400).json({ error: "Content ID is required." });
+        return;
+    }
+
+    const deleteQuery = `DELETE FROM contents WHERE contentid = $1`;
+    await pgClient.query(deleteQuery, [contentId]);
 
     res.json({
-        message: "Content deleted successfully for id:" + userId
-    })
-    return;
-})
+        message: `Content with ID ${contentId} deleted successfully for user }`
+    });
+});
+
 // app.post("/api/v1/brain/share", (req, res) => {
 
 // })
